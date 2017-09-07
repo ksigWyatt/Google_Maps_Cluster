@@ -1,0 +1,8 @@
+## Ignore the API files or other text files that we might not even need
+
+/Keys/
+*.txt
+
+## ignore VS Code files
+
+/.vscode/
