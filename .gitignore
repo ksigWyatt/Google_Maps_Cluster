@@ -2,3 +2,7 @@
 
 /Keys/
 *.txt
+
+## ignore VS Code files
+
+/.vscode/
