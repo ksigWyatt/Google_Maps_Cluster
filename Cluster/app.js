@@ -76,7 +76,7 @@ function geocodeAddress(geocoder, resultsMap) {
             return;
         }
 
-        dbRefObject.orderByChild("lng").equalTo(longitude).once("value",snapshot => {
+        dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
             const userData = snapshot.val();
             // Dont duplicate places that exist - that's just wasteful 
             if (userData){
@@ -101,4 +101,3 @@ function geocodeAddress(geocoder, resultsMap) {
 
     });
 }
-
