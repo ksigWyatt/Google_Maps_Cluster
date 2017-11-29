@@ -35,9 +35,6 @@ function initMap() {
         zoom: 7,
         center: {lat: 27.3334823, lng: -81.5235359}
     });
-
-    // Create an array of alphabetical characters used to label the markers.
-    var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     
     // Add some markers to the map.
     // Note: The code uses the JavaScript Array.prototype.map() method to
@@ -45,8 +42,7 @@ function initMap() {
     // The map() method here has nothing to do with the Google Maps API.
     var markers = locations.map(function(location, i) {
         return new google.maps.Marker({
-            position: location,
-            label: labels[i % labels.length]
+            position: location
         });
     });
 
