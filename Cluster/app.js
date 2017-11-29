@@ -26,7 +26,6 @@ dbRefObject.on('value', function(snapshot) {
     });
     locations = returnArr
     initMap()
-    console.log(returnArr)
 });
 
 function initMap() {
