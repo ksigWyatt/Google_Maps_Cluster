@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Maps Clustering</title>
+	<style>
+		/* Always set the map height explicitly to define the size of the div
+				* element that contains the map. */
+
+		#map {
+			height: 100%;
+		}
+
+		/* Optional: Makes the sample page fill the window. */
+
+		html,
+		body {
+			height: 100%;
+			margin: 0px;
+			padding: 0px;
+		}
+
+		.column {
+			float: left;
+			width: 50%;
+		}
+
+		/* Clear floats after the columns */
+
+		.row:after {
+			content: "";
+			display: table;
+			clear: both;
+		}
+
+		.row {
+			margin: 20px;
+		}
+
+		.row select,
+		#address,
+		#other-reason {
+			width: 60%;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="map"></div>
+	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
+
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyCX1G5olE2m4PeaDtEf30bFALYOjIig4uo",
+			authDomain: "roofing-site-1504805766638.firebaseapp.com",
+			databaseURL: "https://roofing-site-1504805766638.firebaseio.com",
+			projectId: "roofing-site-1504805766638",
+			storageBucket: "roofing-site-1504805766638.appspot.com",
+			messagingSenderId: "907972576340"
+		};
+		firebase.initializeApp(config);
+
+		const dbRefObject = firebase.database().ref().child('location');
+		var locations = []
+		var newLocationLatTemp = 0
+		var newLocationLngTemp = 0
+
+		dbRefObject.on('value', function (snapshot) {
+
+			let returnArr = [];
+
+			snapshot.forEach(childSnapshot => {
+				let item = childSnapshot.val();
+				item.key = childSnapshot.key;
+				returnArr.push(item);
+			});
+			locations = returnArr
+			initMap()
+		});
+
+		function initMap() {
+
+			var map = new google.maps.Map(document.getElementById('map'), {
+				zoom: 10,
+				center: { lat: 26.4869211, lng: -81.8305731 }
+			});
+
+			// Add some markers to the map.
+			// Note: The code uses the JavaScript Array.prototype.map() method to
+			// create an array of markers based on a given "locations" array.
+			// The map() method here has nothing to do with the Google Maps API.
+			var markers = locations.map(function (location, i) {
+				return new google.maps.Marker({
+					position: location
+				});
+			});
+
+			// Add a marker clusterer to manage the markers.
+			var markerCluster = new MarkerClusterer(map, markers,
+				{ imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' });
+
+			// For adding new addresses
+			var geocoder = new google.maps.Geocoder();
+
+			document.getElementById('submitNew').addEventListener('click', function () {
+				geocodeAddress(geocoder, map);
+			});
+		}
+
+		// TODO: Fix the array of values that might get passed
+		// function getSelectValues(select) {
+		// 	var result = [];
+		// 	var options = select && select.options;
+		// 	var opt;
+
+		// 	for (var i = 0, iLen = options.length; i < iLen; i++) {
+		// 		opt = options[i];
+
+		// 		if (opt.selected) {
+		// 			result.push(opt.value || opt.text);
+		// 		}
+		// 	}
+		// 	return result;
+		// }
+
+		// Add Address & convert to lat / long
+		function geocodeAddress(geocoder, resultsMap) {
+			// init vars
+			var mailingAddress = document.getElementById('address').value;
+			var jobPerformed = document.getElementById('job').value;
+			// console.log(1);
+			// var materialsList = getSelectValues(document.getElementById('materials')[0]);
+			// console.log(2);
+			var materialsList = document.getElementById('materials').value;
+			var colorUsed = document.getElementById('color').value;
+			var reasonForOther = document.getElementById('other-reason').value;
+
+			geocoder.geocode({ 'address': mailingAddress }, function (results, status) {
+
+				if (status === 'OK') {
+					var latitude = results[0].geometry.location.lat()
+					var longitude = results[0].geometry.location.lng()
+
+					// This function runs twice for some reason
+					if (latitude === newLocationLatTemp && longitude === newLocationLngTemp) {
+						return;
+					}
+
+					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
+						const userData = snapshot.val();
+						// Dont duplicate places that exist - that's just wasteful 
+						if (userData) {
+							alert("Oops! This location is already in the database. Please try another location.");
+							return;
+						}
+						else {
+							// add vars to the DB
+							var newDBRefObject = dbRefObject.push();
+							newDBRefObject.set({
+								lat: latitude,
+								lng: longitude,
+								job: jobPerformed,
+								other: reasonForOther,
+								materials: materialsList,
+								color: colorUsed,
+								address: mailingAddress,
+								id: newDBRefObject.key
+							})
+						}
+					});
+
+					newLocationLatTemp = latitude
+					newLocationLngTemp = longitude
+				}
+				else {
+					if (newLocationLatTemp === 0 && newLocationLngTemp === 0) {
+						alert("Nothing was entered. Please enter a location to continue.");
+						return;
+					}
+					else {
+						alert('Not successful for the following reason: ' + status);
+					}
+				}
+			});
+		}
+	</script>
+	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaL3EYJJ4zOg_c8MF5PfQqSRts5gb8wiE&callback=initMap"></script>
+
+	<div class="row">
+		<div class="column" id="add-panel">
+			<h2>Add New</h2>
+			<input id="address" type="textbox" placeholder="123 Main St. Fort Myers, FL 33912" required>
+			<br>
+			<br>
+			<p>Indicate the job performed</p>
+			<select id="job">
+				<option value="New Roof">New Roof</option>
+				<option value="Re-Roof">Re-Roof</option>
+				<option value="Repair">Repair</option>
+				<option value="Install">Install</option>
+				<option value="Other">Other</option>
+			</select>
+			<br>
+			<input id="other-reason" type="textbox" placeholder="Specify here if other">
+			<br>
+			<br>
+			<p>Materials used</p>
+			<select id="materials" multiple>
+				<option value="Asphalt">Asphalt</option>
+				<option value="Clay">Clay</option>
+				<option value="Concrete">Concrete</option>
+				<option value="Flat Deck">Flat Deck</option>
+				<option value="Metal">Metal</option>
+				<option value="Shingle">Shingle</option>
+				<option value="Tile">Tile</option>
+			</select>
+			<br>
+			<br>
+			<p>Color</p>
+			<select id="color">
+				<option value=""></option>
+				<option value="Buckskin">Buckskin</option>
+				<option value="Caramel">Caramel</option>
+				<option value="Desert Spice">Desert Spice</option>
+				<option value="Gray">Gray</option>
+				<option value="Mill">Mill</option>
+				<option value="Sahara Tan">Sahara Tan</option>
+			</select>
+			<br>
+			<br>
+			<br>
+			<p>Ensure that the above info is correct before submitting.</p>
+			<input id="submitNew" type="button" value="Submit">
+		</div>
+	</div>
+</body>
+
+</html>

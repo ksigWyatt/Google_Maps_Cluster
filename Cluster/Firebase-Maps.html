@@ -1,31 +1,186 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset="utf-8">
-  <title>Maps Clustering</title>
-  
-	<link rel="stylesheet" type="text/css" href="C:/Users/wyatt/Documents/GitHub/Projects/Google_Maps_Cluster/CSS/Map-Style.css">
+	<title>Maps Clustering</title>
+	<style>
+		/* Always set the map height explicitly to define the size of the div
+		   element that contains the map. 
+		*/
+
+		#map {
+			height: 100%;
+		}
+
+		/* Optional: Makes the sample page fill the window. */
+		html, body {
+			height: 100%;
+			margin: 0px;
+			padding: 0px;
+		}
+	</style>
+</head>
+
+<body>
+	<p></p>
+	<div id="map"></div>
 	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
+
+	<script>
+		// Firebase init
+		var config = {
+			apiKey: "AIzaSyCX1G5olE2m4PeaDtEf30bFALYOjIig4uo",
+			authDomain: "roofing-site-1504805766638.firebaseapp.com",
+			databaseURL: "https://roofing-site-1504805766638.firebaseio.com",
+			projectId: "roofing-site-1504805766638",
+			storageBucket: "roofing-site-1504805766638.appspot.com",
+			messagingSenderId: "907972576340"
+		};
+		firebase.initializeApp(config);
+
+		const dbRefObject = firebase.database().ref().child('location');
+		var locations = []
+		var newLocationLatTemp = 0
+		var newLocationLngTemp = 0
+		var contentString = ""
+
+		// neccessary because there's going to be many hundereds of locations
+		// unfortunately accessing them individually in forEach() it won't work unless we render
+		// the map several times - much older machines might not be able to handle this much ram allocation
+		// it's 6 * potentially 25000 items. Then again Firebase limits to 1GB of data.
+		var located = []
+		var locationKey = []
+		var color = []
+		var job =  []
+		var materials = [] 
+		var reasonForOther = []
+
+
+		// capture all locations in the DB
+		dbRefObject.on('value', function (snapshot) {
+
+			let returnArr = [];
+
+			snapshot.forEach(childSnapshot => {
+				let item = childSnapshot.val();
+				item.key = childSnapshot.key; // UID for each item in DB
+				locationKey.push(childSnapshot.key);
+				located.push(childSnapshot.val().address);
+				color.push(childSnapshot.val().color);
+				job.push(childSnapshot.val().job);
+				materials.push(childSnapshot.val().materials);
+				reasonForOther.push(childSnapshot.val().reasonForOther);
+				returnArr.push(item);
+			});
+			locations = returnArr
+			initMap()
+		});
+
+		// display the map and all that is on it
+		function initMap() {
+			var office = { lat: 26.4869211, lng: -81.8305731 }
+			var map = new google.maps.Map(document.getElementById('map'), {
+				zoom: 10,
+				center: office
+			});
+
+			var i = 0
+
+			// Add some markers to the map
+			var markers = locations.map(function (location, i) {
+				
+				// Somewhat async call to create the labels as they are updated in the system
+				// Desc label fort each marker
+				contentString = '<div id="content">'+
+					'<div id="siteNotice">'+
+					'</div>'+
+					'<h2 id="firstHeading" class="firstHeading">' + color[i] + ' ' +
+					materials[i] + ' ' + job[i] + '</h2>'+
+					'<div id="bodyContent">'+
+					'<b>Location ID:   </b>' + locationKey[i] + 
+					'<p>' +
+					located[i] +
+					'</p>'+
+					'<br><a href="https://www.google.com/maps/dir//' + located[i] +  '/" target="_blank">' +
+					'Get Directions to here</a> '+
+					'</div>'+
+					'</div>';
+
+				// info window pops when the marker is clicked
+				var infowindow = new google.maps.InfoWindow({
+					content: contentString
+				});
+				// create a custom marker at location, location
+				var marker =  new google.maps.Marker({
+					position: location
+				});
+
+				marker.addListener('click', function() {
+					infowindow.open(map, marker);
+				});
+				i++;
+
+				// return custom marker type
+				return marker;
+			});
+
+			// Add a marker clusterer to manage the markers.
+			var markerCluster = new MarkerClusterer(map, markers, { 
+					imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' 
+			});
+
+
+			// For adding new addresses
+			var geocoder = new google.maps.Geocoder();
+
+			// Uncaught TypeError: Cannot read property 'addEventListener' of null
+			document.getElementById('submit').addEventListener('click', function () {
+				geocodeAddress(geocoder, map);
+			});
+		}
+
+
+		function geocodeAddress(geocoder, resultsMap) {
+			var address = document.getElementById('address').value;
+			geocoder.geocode({ 'address': address }, function (results, status) {
+
+				if (status === 'OK') {
+					var latitude = results[0].geometry.location.lat()
+					var longitude = results[0].geometry.location.lng()
+
+					// This function runs twice for some reason
+					if (latitude === newLocationLatTemp && longitude === newLocationLngTemp) {
+						return;
+					}
+
+					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
+						const userData = snapshot.val();
+						// Dont duplicate places that exist - that's just wasteful 
+						if (userData) {
+							alert("Oops! This location is already in the database. Please try another location.");
+							return;
+						}
+						else {
+							var newDBRefObject = dbRefObject.push();
+							newDBRefObject.set({
+								lat: latitude,
+								lng: longitude
+							})
+						}
+					});
+
+					newLocationLatTemp = latitude
+					newLocationLngTemp = longitude
+				}
+				else {
+					alert('Geocode was not successful for the following reason: ' + status);
+				}
+			});
+		}
+	</script>
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
-</head>
-<body>
-
-<pre id="location"></pre>
-<div id="map"></div>
-<script src="app.js"></script>
-
-<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaL3EYJJ4zOg_c8MF5PfQqSRts5gb8wiE&callback=initMap"></script>
-
-	<h2>Add a new location:</h2>
-	<div id="floating-panel">
-		<input id="address" type="textbox">
-		<br><br>
-		<input id="submit" type="button" value="Add New">
-	  </div>
-
-
-</script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaL3EYJJ4zOg_c8MF5PfQqSRts5gb8wiE&callback=initMap"></script>
 </body>
 </html>
