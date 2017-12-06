@@ -6,14 +6,14 @@
 	<title>Maps Clustering</title>
 	<style>
 		/* Always set the map height explicitly to define the size of the div
-				* element that contains the map. */
+		   element that contains the map. 
+		*/
 
 		#map {
 			height: 100%;
 		}
 
 		/* Optional: Makes the sample page fill the window. */
-
 		html, body {
 			height: 100%;
 			margin: 0px;
@@ -28,7 +28,7 @@
 	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
 
 	<script>
-		// Initialize Firebase
+		// Firebase init
 		var config = {
 			apiKey: "AIzaSyCX1G5olE2m4PeaDtEf30bFALYOjIig4uo",
 			authDomain: "roofing-site-1504805766638.firebaseapp.com",
@@ -45,6 +45,7 @@
 		var newLocationLatTemp = 0
 		var newLocationLngTemp = 0
 
+		// capture all locations in the DB
 		dbRefObject.on('value', function (snapshot) {
 
 			let returnArr = [];
@@ -58,6 +59,8 @@
 			initMap()
 		});
 
+
+		// display the map and all that is on it
 		function initMap() {
 			var office = { lat: 26.4869211, lng: -81.8305731 }
 			var map = new google.maps.Map(document.getElementById('map'), {
@@ -65,15 +68,15 @@
 				center: office
 			});
 
-			// Add some markers to the map.
-			// Note: The code uses the JavaScript Array.prototype.map() method to
-			// create an array of markers based on a given "locations" array.
-			// The map() method here has nothing to do with the Google Maps API.
+			// Add some markers to the map
 			var markers = locations.map(function (location, i) {
+
+				// create a custom marker at location, location
 				var marker =  new google.maps.Marker({
 					position: location
 				});
 
+				// Desc label fort each marker
 				var contentString = '<div id="content">'+
 				'<div id="siteNotice">'+
 				'</div>'+
@@ -95,6 +98,7 @@
 				'</div>'+
 				'</div>';
 
+				// info window pops when the marker is clicked
 				var infowindow = new google.maps.InfoWindow({
 					content: contentString
 				});
@@ -103,17 +107,15 @@
 					infowindow.open(map, marker);
 				});
 
+				// return custom marker type
 				return marker;
 			});
 
 			// Add a marker clusterer to manage the markers.
 			var markerCluster = new MarkerClusterer(map, markers, { 
 					imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' 
-				});
+			});
 
-			
-
-			
 
 			// For adding new addresses
 			var geocoder = new google.maps.Geocoder();
