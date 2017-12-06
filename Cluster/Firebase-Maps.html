@@ -23,6 +23,7 @@
 </head>
 
 <body>
+	<p></p>
 	<div id="map"></div>
 	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
@@ -39,13 +40,23 @@
 		};
 		firebase.initializeApp(config);
 
-		const preObject = document.getElementById('location');
 		const dbRefObject = firebase.database().ref().child('location');
 		var locations = []
 		var newLocationLatTemp = 0
 		var newLocationLngTemp = 0
 		var contentString = ""
-		var located = ""
+
+		// neccessary because there's going to be many hundereds of locations
+		// unfortunately accessing them individually in forEach() it won't work unless we render
+		// the map several times - much older machines might not be able to handle this much ram allocation
+		// it's 6 * potentially 25000 items. Then again Firebase limits to 1GB of data.
+		var located = []
+		var locationKey = []
+		var color = []
+		var job =  []
+		var materials = [] 
+		var reasonForOther = []
+
 
 		// capture all locations in the DB
 		dbRefObject.on('value', function (snapshot) {
@@ -55,20 +66,17 @@
 			snapshot.forEach(childSnapshot => {
 				let item = childSnapshot.val();
 				item.key = childSnapshot.key; // UID for each item in DB
+				locationKey.push(childSnapshot.key);
+				located.push(childSnapshot.val().address);
+				color.push(childSnapshot.val().color);
+				job.push(childSnapshot.val().job);
+				materials.push(childSnapshot.val().materials);
+				reasonForOther.push(childSnapshot.val().reasonForOther);
 				returnArr.push(item);
 			});
 			locations = returnArr
 			initMap()
 		});
-
-		// Async call for the location data
-		// function getLocationData() {
-		// 	return dbRefObject.on('value', function (snapshot) {	
-		// 		return snapshot.forEach(childSnapshot => {
-		// 			return childSnapshot.val();
-		// 		});
-		// 	});
-		// }
 
 		// display the map and all that is on it
 		function initMap() {
@@ -78,40 +86,32 @@
 				center: office
 			});
 
-			// getLocationData().then(value => {
-			// 	alert(value);
-			// });
-
-			// Desc label fort each marker
-			contentString = '<div id="content">'+
-				'<div id="siteNotice">'+
-				'</div>'+
-				'<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
-				'<div id="bodyContent">'+
-				'<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
-				'sandstone rock formation in the southern part of the '+
-				'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
-				'south west of the nearest large town, Alice Springs; 450&#160;km '+
-				'(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
-				'features of the Uluru - Kata Tjuta National Park. Uluru is '+
-				'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
-				'Aboriginal people of the area. It has many springs, waterholes, '+
-				'rock caves and ancient paintings. Uluru is listed as a World '+
-				'Heritage Site.</p>'+
-				'<p>Attribution: Uluru, <a href="https://www.google.com/maps/dir//' + located +  '/">' +
-				'Get Directions to here</a> '+
-				'(last visited June 22, 2009).</p>'+
-				'</div>'+
-				'</div>';
-
-			// info window pops when the marker is clicked
-			var infowindow = new google.maps.InfoWindow({
-				content: contentString
-			});
+			var i = 0
 
 			// Add some markers to the map
 			var markers = locations.map(function (location, i) {
+				
+				// Somewhat async call to create the labels as they are updated in the system
+				// Desc label fort each marker
+				contentString = '<div id="content">'+
+					'<div id="siteNotice">'+
+					'</div>'+
+					'<h2 id="firstHeading" class="firstHeading">' + color[i] + ' ' +
+					materials[i] + ' ' + job[i] + '</h2>'+
+					'<div id="bodyContent">'+
+					'<b>Location ID:   </b>' + locationKey[i] + 
+					'<p>' +
+					located[i] +
+					'</p>'+
+					'<br><a href="https://www.google.com/maps/dir//' + located[i] +  '/">' +
+					'Get Directions to here</a> '+
+					'</div>'+
+					'</div>';
 
+				// info window pops when the marker is clicked
+				var infowindow = new google.maps.InfoWindow({
+					content: contentString
+				});
 				// create a custom marker at location, location
 				var marker =  new google.maps.Marker({
 					position: location
@@ -120,7 +120,8 @@
 				marker.addListener('click', function() {
 					infowindow.open(map, marker);
 				});
-
+				i++;
+				console.log(i)
 				// return custom marker type
 				return marker;
 			});
@@ -134,6 +135,7 @@
 			// For adding new addresses
 			var geocoder = new google.maps.Geocoder();
 
+			// Uncaught TypeError: Cannot read property 'addEventListener' of null
 			document.getElementById('submit').addEventListener('click', function () {
 				geocodeAddress(geocoder, map);
 			});
