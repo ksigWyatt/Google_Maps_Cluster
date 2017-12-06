@@ -44,6 +44,8 @@
 		var locations = []
 		var newLocationLatTemp = 0
 		var newLocationLngTemp = 0
+		var contentString = ""
+		var located = ""
 
 		// capture all locations in the DB
 		dbRefObject.on('value', function (snapshot) {
@@ -52,13 +54,21 @@
 
 			snapshot.forEach(childSnapshot => {
 				let item = childSnapshot.val();
-				item.key = childSnapshot.key;
+				item.key = childSnapshot.key; // UID for each item in DB
 				returnArr.push(item);
 			});
 			locations = returnArr
 			initMap()
 		});
 
+		// Async call for the location data
+		// function getLocationData() {
+		// 	return dbRefObject.on('value', function (snapshot) {	
+		// 		return snapshot.forEach(childSnapshot => {
+		// 			return childSnapshot.val();
+		// 		});
+		// 	});
+		// }
 
 		// display the map and all that is on it
 		function initMap() {
@@ -68,16 +78,12 @@
 				center: office
 			});
 
-			// Add some markers to the map
-			var markers = locations.map(function (location, i) {
+			// getLocationData().then(value => {
+			// 	alert(value);
+			// });
 
-				// create a custom marker at location, location
-				var marker =  new google.maps.Marker({
-					position: location
-				});
-
-				// Desc label fort each marker
-				var contentString = '<div id="content">'+
+			// Desc label fort each marker
+			contentString = '<div id="content">'+
 				'<div id="siteNotice">'+
 				'</div>'+
 				'<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
@@ -92,17 +98,25 @@
 				'Aboriginal people of the area. It has many springs, waterholes, '+
 				'rock caves and ancient paintings. Uluru is listed as a World '+
 				'Heritage Site.</p>'+
-				'<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
-				'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
+				'<p>Attribution: Uluru, <a href="https://www.google.com/maps/dir//' + located +  '/">' +
+				'Get Directions to here</a> '+
 				'(last visited June 22, 2009).</p>'+
 				'</div>'+
 				'</div>';
 
-				// info window pops when the marker is clicked
-				var infowindow = new google.maps.InfoWindow({
-					content: contentString
+			// info window pops when the marker is clicked
+			var infowindow = new google.maps.InfoWindow({
+				content: contentString
+			});
+
+			// Add some markers to the map
+			var markers = locations.map(function (location, i) {
+
+				// create a custom marker at location, location
+				var marker =  new google.maps.Marker({
+					position: location
 				});
-				
+
 				marker.addListener('click', function() {
 					infowindow.open(map, marker);
 				});
@@ -168,5 +182,4 @@
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaL3EYJJ4zOg_c8MF5PfQqSRts5gb8wiE&callback=initMap"></script>
 </body>
-
 </html>
