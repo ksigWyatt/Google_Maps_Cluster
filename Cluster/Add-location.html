@@ -63,7 +63,6 @@
 		};
 		firebase.initializeApp(config);
 
-		const preObject = document.getElementById('location');
 		const dbRefObject = firebase.database().ref().child('location');
 		var locations = []
 		var newLocationLatTemp = 0
@@ -167,7 +166,8 @@
 								other: reasonForOther,
 								materials: materialsList,
 								color: colorUsed,
-								address: mailingAddress
+								address: mailingAddress,
+								id: newDBRefObject.key
 							})
 						}
 					});
