@@ -14,10 +14,30 @@
 		}
 
 		/* Optional: Makes the sample page fill the window. */
-		html, body {
+
+		html,
+		body {
 			height: 100%;
 			margin: 0px;
 			padding: 0px;
+		}
+
+		.column {
+			float: left;
+			width: 50%;
+			padding: 10px;
+		}
+
+		/* Clear floats after the columns */
+
+		.row:after {
+			content: "";
+			display: table;
+			clear: both;
+		}
+
+		* {
+			box-sizing: border-box;
 		}
 	</style>
 </head>
@@ -53,9 +73,10 @@
 		var located = []
 		var locationKey = []
 		var color = []
-		var job =  []
-		var materials = [] 
+		var job = []
+		var materials = []
 		var reasonForOther = []
+		var locationImage = []
 
 
 		// capture all locations in the DB
@@ -72,6 +93,7 @@
 				job.push(childSnapshot.val().job);
 				materials.push(childSnapshot.val().materials);
 				reasonForOther.push(childSnapshot.val().reasonForOther);
+				locationImage.push(childSnapshot.val().image);
 				returnArr.push(item);
 			});
 			locations = returnArr
@@ -90,36 +112,42 @@
 
 			// Add some markers to the map
 			var markers = locations.map(function (location, i) {
-				
+
 				// Somewhat async call to create the labels as they are updated in the system
 				// Desc label fort each marker
-				contentString = '<div id="content">'+
-					'<div id="siteNotice">'+
-					'</div>'+
-					'<h2 id="firstHeading" class="firstHeading">' + color[i] + ' ' +
-					materials[i] + ' ' + job[i] + '</h2>'+
-					'<div id="bodyContent">'+
-					'<b>Location ID:   </b>' + locationKey[i] + 
+				contentString = '<div id="content">' +
+
+					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
+					materials[i] + ' ' + job[i] + '</h2>' +
+
+					'<div class="row">' +
+					'<div class="column">' +
+					'<img id="image" style="float:left;width:200px;height:200px;" ' +
+					'src="' + locationImage[i] + '">' +
+					'</div>' +
+					'<div class="column">' +
+					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
 					'<p>' +
 					located[i] +
-					'</p>'+
-					'<br><a href="https://www.google.com/maps/dir//' + located[i] +  '/" target="_blank">' +
-					'Get Directions to here</a> '+
-					'</div>'+
+					'</p> ' +
+					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
+					'Get Directions to here</a> ' +
+					'</div>' +
+					'</div>' +
 					'</div>';
 
 				// info window pops when the marker is clicked
 				var infowindow = new google.maps.InfoWindow({
-					content: contentString
+							content: contentString
 				});
 				// create a custom marker at location, location
-				var marker =  new google.maps.Marker({
-					position: location
+				var marker = new google.maps.Marker({
+							position: location
 				});
 
-				marker.addListener('click', function() {
-					infowindow.open(map, marker);
-				});
+				marker.addListener('click', function () {
+							infowindow.open(map, marker);
+						});
 				i++;
 
 				// return custom marker type
@@ -127,8 +155,8 @@
 			});
 
 			// Add a marker clusterer to manage the markers.
-			var markerCluster = new MarkerClusterer(map, markers, { 
-					imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' 
+			var markerCluster = new MarkerClusterer(map, markers, {
+							imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
 			});
 
 
@@ -137,14 +165,23 @@
 
 			// Uncaught TypeError: Cannot read property 'addEventListener' of null
 			document.getElementById('submit').addEventListener('click', function () {
-				geocodeAddress(geocoder, map);
-			});
+							geocodeAddress(geocoder, map);
+						});
 		}
+
+		// restore the arrays to empty once the page has loaded
+		located = []
+		locationKey = []
+		color = []
+		job = []
+		materials = []
+		reasonForOther = []
+		locationImage = []
 
 
 		function geocodeAddress(geocoder, resultsMap) {
 			var address = document.getElementById('address').value;
-			geocoder.geocode({ 'address': address }, function (results, status) {
+			geocoder.geocode({'address': address }, function (results, status) {
 
 				if (status === 'OK') {
 					var latitude = results[0].geometry.location.lat()
@@ -152,20 +189,20 @@
 
 					// This function runs twice for some reason
 					if (latitude === newLocationLatTemp && longitude === newLocationLngTemp) {
-						return;
+						return ;
 					}
 
 					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
 						const userData = snapshot.val();
-						// Dont duplicate places that exist - that's just wasteful 
+						// Dont duplicate places that exist - that's just wasteful
 						if (userData) {
 							alert("Oops! This location is already in the database. Please try another location.");
-							return;
+						return;
 						}
 						else {
 							var newDBRefObject = dbRefObject.push();
 							newDBRefObject.set({
-								lat: latitude,
+							lat: latitude,
 								lng: longitude
 							})
 						}
@@ -175,7 +212,7 @@
 					newLocationLngTemp = longitude
 				}
 				else {
-					alert('Geocode was not successful for the following reason: ' + status);
+							alert('Geocode was not successful for the following reason: ' + status);
 				}
 			});
 		}
