@@ -101,7 +101,7 @@
             }
             // remove desc text after a few seconds
             if (data == "") {
-                document.getElementById("results-panel").innerHTML = "No results found"
+                document.getElementById("results-panel").innerHTML =  header + '<p>No Results Found</p>'
                 setTimeout(function(){ document.getElementById("results-panel").innerHTML = "" }, 4000);
             }
             
