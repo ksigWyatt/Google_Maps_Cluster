@@ -110,7 +110,7 @@
 			var markers = locations.map(function (location, i) {
 
 				// Somewhat async call to create the labels as they are updated in the system
-				// Desc label fort each marker
+				// if the job is other - let's not display that
 				if (job[i] == "Other") {
 					job[i] = ""
 				}
