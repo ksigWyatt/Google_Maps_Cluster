@@ -164,9 +164,13 @@
 			var geocoder = new google.maps.Geocoder();
 
 			// Uncaught TypeError: Cannot read property 'addEventListener' of null
-			document.getElementById('submit').addEventListener('click', function () {
+			var submitButton = document.getElementById('submit')
+			if (submitButton) {
+				submitButton.addEventListener('click', function () {
 							geocodeAddress(geocoder, map);
 						});
+			}
+			
 		}
 
 		// restore the arrays to empty once the page has loaded
