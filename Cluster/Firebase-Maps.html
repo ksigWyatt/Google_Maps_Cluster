@@ -115,7 +115,44 @@
 					job[i] = ""
 				}
 
-				contentString = '<div id="content">' +
+				// if the job isn't Other and the client entered something in the other type of job box
+				else if (reasonForOther[i]) {
+
+					// if the other reason was something like Gutter Install and they Chose Install as the job
+					if (reasonForOther[i].includes(job[i])) {
+						job[i] = ""
+					}
+					else if (reasonForOther[i].includes(job[i].toLowerCase())) {
+						job[i] = ""
+
+					}
+					
+					contentString = '<div id="content">' +
+
+					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
+					materials[i] + ' ' + reasonForOther[i] + ' ' + job[i] +  '</h2>' +
+
+					'<div class="row">' +
+
+					'<div class="column">' +
+					'<img id="image" style="float:left;width:200px;height:200px;" ' +
+					'src="' + locationImage[i] + '">' +
+					'</div>' +
+
+					'<div class="column">' +
+					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
+					'<p>' +
+					located[i] +
+					'</p> ' +
+					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
+					'Get Directions to here</a> ' +
+
+					'</div>' +
+					'</div>' +
+					'</div>';
+				}
+				else {
+					contentString = '<div id="content">' +
 
 					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
 					materials[i] + ' ' + job[i] + reasonForOther[i] +  '</h2>' +
@@ -134,10 +171,13 @@
 					'</p> ' +
 					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
 					'Get Directions to here</a> ' +
-					
+
 					'</div>' +
 					'</div>' +
 					'</div>';
+				}
+
+				
 
 				// info window pops when the marker is clicked
 				var infowindow = new google.maps.InfoWindow({
