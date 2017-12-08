@@ -137,6 +137,7 @@
 			var materialsList = document.getElementById('materials').value;
 			var colorUsed = document.getElementById('color').value;
 			var reasonForOther = document.getElementById('other-reason').value;
+			var imagePath = document.getElementById('imagePath').value;
 
 			geocoder.geocode({ 'address': mailingAddress }, function (results, status) {
 
@@ -157,6 +158,12 @@
 							return;
 						}
 						else {
+
+							// if someone forgets to specify the URL define a default value so the DB is setup properly
+							if (!imagePath) {}
+								imagePath = "https://onlinemarketingsoda.files.wordpress.com/2015/09/google-changes-new-logo-rebranding-2015-icon-doodle-square1.png"
+							}
+
 							// add vars to the DB
 							var newDBRefObject = dbRefObject.push();
 							newDBRefObject.set({
@@ -168,7 +175,7 @@
 								color: colorUsed,
 								address: mailingAddress,
 								id: newDBRefObject.key,
-								location: "https://cdn.vox-cdn.com/thumbor/Pkmq1nm3skO0-j693JTMd7RL0Zk=/0x0:2012x1341/1200x800/filters:focal(0x0:2012x1341)/cdn.vox-cdn.com/uploads/chorus_image/image/47070706/google2.0.0.jpg"
+								image: imagePath
 							})
 						}
 					});
@@ -198,7 +205,7 @@
 			<br>
 			<br>
 			<p>Indicate the job performed</p>
-			<select id="job">
+			<select id="job" required>
 				<option value="New Roof">New Roof</option>
 				<option value="Re-Roof">Re-Roof</option>
 				<option value="Repair">Repair</option>
@@ -231,6 +238,9 @@
 				<option value="Mill">Mill</option>
 				<option value="Sahara Tan">Sahara Tan</option>
 			</select>
+			<br>
+			<p>Please enter the URL of the image. Also, ensure that the image is square for the best performance.</p>
+			<input id="imagePath" type="textbox" placeholder="http://image.jpg">
 			<br>
 			<br>
 			<br>
