@@ -37,7 +37,8 @@
 
 		.row select,
 		#address,
-		#other-reason {
+		#other-reason,
+		#imagePath {
 			width: 60%;
 		}
 	</style>
@@ -184,7 +185,6 @@
 				}
 				else {
 					if (newLocationLatTemp === 0 && newLocationLngTemp === 0) {
-
 						if (temp == 1) {
 							return;
 						}
@@ -220,7 +220,7 @@
 				<option value="Other">Other</option>
 			</select>
 			<br>
-			<input id="other-reason" type="textbox" placeholder="Specify here if other">
+			<input id="other-reason" type="textbox" placeholder="Specify some other job performed">
 			<br>
 			<br>
 			<p>Materials used</p>

@@ -88,7 +88,7 @@
 				color.push(childSnapshot.val().color);
 				job.push(childSnapshot.val().job);
 				materials.push(childSnapshot.val().materials);
-				reasonForOther.push(childSnapshot.val().reasonForOther);
+				reasonForOther.push(childSnapshot.val().other);
 				locationImage.push(childSnapshot.val().image);
 				returnArr.push(item);
 			});
@@ -111,16 +111,22 @@
 
 				// Somewhat async call to create the labels as they are updated in the system
 				// Desc label fort each marker
+				if (job[i] == "Other") {
+					job[i] = ""
+				}
+
 				contentString = '<div id="content">' +
 
 					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
-					materials[i] + ' ' + job[i] + '</h2>' +
+					materials[i] + ' ' + job[i] + reasonForOther[i] +  '</h2>' +
 
 					'<div class="row">' +
+
 					'<div class="column">' +
 					'<img id="image" style="float:left;width:200px;height:200px;" ' +
 					'src="' + locationImage[i] + '">' +
 					'</div>' +
+
 					'<div class="column">' +
 					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
 					'<p>' +
@@ -128,6 +134,7 @@
 					'</p> ' +
 					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
 					'Get Directions to here</a> ' +
+					
 					'</div>' +
 					'</div>' +
 					'</div>';
