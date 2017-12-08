@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 	<meta charset="utf-8">
-	<title>Maps Clustering</title>
 	<style>
-		/* Always set the map height explicitly to define the size of the div
-				* element that contains the map. */
+		/* Always set the map height explicitly to define the size of the div */
 
 		#map {
 			height: 100%;
@@ -67,6 +64,7 @@
 		var locations = []
 		var newLocationLatTemp = 0
 		var newLocationLngTemp = 0
+		var temp = 0
 
 		dbRefObject.on('value', function (snapshot) {
 
@@ -108,6 +106,7 @@
 			document.getElementById('submitNew').addEventListener('click', function () {
 				geocodeAddress(geocoder, map);
 			});
+			temp = 0
 		}
 
 		// TODO: Fix the array of values that might get passed
@@ -128,7 +127,7 @@
 
 		// Add Address & convert to lat / long
 		function geocodeAddress(geocoder, resultsMap) {
-			// init vars
+
 			var mailingAddress = document.getElementById('address').value;
 			var jobPerformed = document.getElementById('job').value;
 			// console.log(1);
@@ -152,7 +151,7 @@
 
 					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
 						const userData = snapshot.val();
-						// Dont duplicate places that exist - that's just wasteful 
+						// dont duplicate places that exist
 						if (userData) {
 							alert("Oops! This location is already in the database. Please try another location.");
 							return;
@@ -185,14 +184,22 @@
 				}
 				else {
 					if (newLocationLatTemp === 0 && newLocationLngTemp === 0) {
-						alert("Nothing was entered. Please enter a location to continue.");
-						return;
+
+						if (temp == 1) {
+							return;
+						}
+						else if (temp == 0) {
+							alert("Nothing was entered. Please enter a location to continue.");
+							temp++;
+							return;
+						}
 					}
 					else {
 						alert('Not successful for the following reason: ' + status);
 					}
 				}
 			});
+			window.reload();
 		}
 	</script>
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
