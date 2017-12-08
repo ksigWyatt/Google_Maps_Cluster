@@ -82,6 +82,7 @@
 
 			var material = document.getElementById('materials').value;
 			var color = document.getElementById('color').value;
+            var zip = document.getElementById('zipCode').value;
             var header = '<h2>' + color + ' ' + material + '</h2>';
             var data = ""
             var number = 0
@@ -89,6 +90,7 @@
             // Find matches
             for (var i = 0; i < locationKey.length; i++) {
                 
+                // if the locations in the array match the criteria
                 if (material == materials[i] && color == colors[i]) {
                     number++;
                     
@@ -109,7 +111,6 @@
 	<div class="row">
 		<div class="column" id="search-panel">
 			<p>Which material are you looking for?</p>
-			<br>
 			<select id="materials" required>
 				<option value="Asphalt">Asphalt</option>
 				<option value="Clay">Clay</option>
@@ -129,8 +130,14 @@
 				<option value="Gray">Gray</option>
 				<option value="Mill">Mill</option>
 				<option value="Sahara Tan">Sahara Tan</option>
-			</select>
+            </select>
+            <br>
 			<br>
+            <p>Enter your Zip Code</p>
+			<input id="zipCode" type="textbox" placeholder="33912">
+			<br>
+            <br>
+            <br>
 			<br>
 			<input id="submitSearch" type="button" value="Search">
         </div>
