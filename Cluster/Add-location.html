@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 	<meta charset="utf-8">
-	<title>Maps Clustering</title>
 	<style>
-		/* Always set the map height explicitly to define the size of the div
-				* element that contains the map. */
+		/* Always set the map height explicitly to define the size of the div */
 
 		#map {
 			height: 100%;
@@ -40,7 +37,8 @@
 
 		.row select,
 		#address,
-		#other-reason {
+		#other-reason,
+		#imagePath {
 			width: 60%;
 		}
 	</style>
@@ -67,6 +65,7 @@
 		var locations = []
 		var newLocationLatTemp = 0
 		var newLocationLngTemp = 0
+		var temp = 0
 
 		dbRefObject.on('value', function (snapshot) {
 
@@ -108,6 +107,7 @@
 			document.getElementById('submitNew').addEventListener('click', function () {
 				geocodeAddress(geocoder, map);
 			});
+			temp = 0
 		}
 
 		// TODO: Fix the array of values that might get passed
@@ -128,7 +128,7 @@
 
 		// Add Address & convert to lat / long
 		function geocodeAddress(geocoder, resultsMap) {
-			// init vars
+
 			var mailingAddress = document.getElementById('address').value;
 			var jobPerformed = document.getElementById('job').value;
 			// console.log(1);
@@ -152,7 +152,7 @@
 
 					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
 						const userData = snapshot.val();
-						// Dont duplicate places that exist - that's just wasteful 
+						// dont duplicate places that exist
 						if (userData) {
 							alert("Oops! This location is already in the database. Please try another location.");
 							return;
@@ -160,8 +160,8 @@
 						else {
 
 							// if someone forgets to specify the URL define a default value so the DB is setup properly
-							if (!imagePath) {}
-								imagePath = "https://onlinemarketingsoda.files.wordpress.com/2015/09/google-changes-new-logo-rebranding-2015-icon-doodle-square1.png"
+							if (!imagePath) {
+								imagePath = "https://s3-media4.fl.yelpcdn.com/bphoto/6MA2UNPD2rslprcqWCqNKQ/180s.jpg"
 							}
 
 							// add vars to the DB
@@ -185,8 +185,14 @@
 				}
 				else {
 					if (newLocationLatTemp === 0 && newLocationLngTemp === 0) {
-						alert("Nothing was entered. Please enter a location to continue.");
-						return;
+						if (temp == 1) {
+							return;
+						}
+						else if (temp == 0) {
+							alert("Nothing was entered. Please enter a location to continue.");
+							temp++;
+							return;
+						}
 					}
 					else {
 						alert('Not successful for the following reason: ' + status);
@@ -213,7 +219,9 @@
 				<option value="Other">Other</option>
 			</select>
 			<br>
-			<input id="other-reason" type="textbox" placeholder="Specify here if other">
+			<br>
+			<p>If other job, what was performed for the client?</p>
+			<input id="other-reason" type="textbox" placeholder="Gutter Install, Replace Skylight, Pressure Wash, etc.">
 			<br>
 			<br>
 			<p>Materials used</p>
@@ -249,5 +257,4 @@
 		</div>
 	</div>
 </body>
-
 </html>

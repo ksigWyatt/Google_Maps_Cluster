@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 	<meta charset="utf-8">
-	<title>Maps Clustering</title>
 	<style>
-		/* Always set the map height explicitly to define the size of the div
-		   element that contains the map. 
-		*/
+		/* Always set the map height explicitly to define the size of the div. */
 
 		#map {
 			height: 100%;
@@ -92,7 +88,7 @@
 				color.push(childSnapshot.val().color);
 				job.push(childSnapshot.val().job);
 				materials.push(childSnapshot.val().materials);
-				reasonForOther.push(childSnapshot.val().reasonForOther);
+				reasonForOther.push(childSnapshot.val().other);
 				locationImage.push(childSnapshot.val().image);
 				returnArr.push(item);
 			});
@@ -114,27 +110,72 @@
 			var markers = locations.map(function (location, i) {
 
 				// Somewhat async call to create the labels as they are updated in the system
-				// Desc label fort each marker
-				contentString = '<div id="content">' +
+				// if the job is other - let's not display that
+				if (job[i] == "Other") {
+					job[i] = ""
+				}
+
+				// if the job isn't Other and the client entered something in the other type of job box
+				else if (reasonForOther[i]) {
+
+					// if the other reason was something like Gutter Install and they Chose Install as the job
+					if (reasonForOther[i].includes(job[i])) {
+						job[i] = ""
+					}
+					else if (reasonForOther[i].includes(job[i].toLowerCase())) {
+						job[i] = ""
+
+					}
+					
+					contentString = '<div id="content">' +
 
 					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
-					materials[i] + ' ' + job[i] + '</h2>' +
+					materials[i] + ' ' + reasonForOther[i] + ' ' + job[i] +  '</h2>' +
 
 					'<div class="row">' +
+
 					'<div class="column">' +
 					'<img id="image" style="float:left;width:200px;height:200px;" ' +
 					'src="' + locationImage[i] + '">' +
 					'</div>' +
+
 					'<div class="column">' +
-					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
-					'<p>' +
 					located[i] +
 					'</p> ' +
 					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
 					'Get Directions to here</a> ' +
+					'<br><br><br><br>' +
+					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
+
 					'</div>' +
 					'</div>' +
 					'</div>';
+				}
+				else {
+					contentString = '<div id="content">' +
+
+					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
+					materials[i] + ' ' + job[i] + reasonForOther[i] +  '</h2>' +
+
+					'<div class="row">' +
+
+					'<div class="column">' +
+					'<img id="image" style="float:left;width:200px;height:200px;" ' +
+					'src="' + locationImage[i] + '">' +
+					'</div>' +
+
+					'<div class="column">' +
+					located[i] +
+					'</p> ' +
+					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
+					'Get Directions to here</a> ' +
+					'<br><br><br><br>' +
+					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
+
+					'</div>' +
+					'</div>' +
+					'</div>';
+				}
 
 				// info window pops when the marker is clicked
 				var infowindow = new google.maps.InfoWindow({
@@ -147,7 +188,7 @@
 
 				marker.addListener('click', function () {
 							infowindow.open(map, marker);
-						});
+				});
 				i++;
 
 				// return custom marker type
@@ -158,18 +199,6 @@
 			var markerCluster = new MarkerClusterer(map, markers, {
 							imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
 			});
-
-
-			// For adding new addresses
-			var geocoder = new google.maps.Geocoder();
-
-			// Uncaught TypeError: Cannot read property 'addEventListener' of null
-			var submitButton = document.getElementById('submit')
-			if (submitButton) {
-				submitButton.addEventListener('click', function () {
-							geocodeAddress(geocoder, map);
-						});
-			}
 			
 		}
 
@@ -182,44 +211,6 @@
 		reasonForOther = []
 		locationImage = []
 
-
-		function geocodeAddress(geocoder, resultsMap) {
-			var address = document.getElementById('address').value;
-			geocoder.geocode({'address': address }, function (results, status) {
-
-				if (status === 'OK') {
-					var latitude = results[0].geometry.location.lat()
-					var longitude = results[0].geometry.location.lng()
-
-					// This function runs twice for some reason
-					if (latitude === newLocationLatTemp && longitude === newLocationLngTemp) {
-						return ;
-					}
-
-					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
-						const userData = snapshot.val();
-						// Dont duplicate places that exist - that's just wasteful
-						if (userData) {
-							alert("Oops! This location is already in the database. Please try another location.");
-						return;
-						}
-						else {
-							var newDBRefObject = dbRefObject.push();
-							newDBRefObject.set({
-							lat: latitude,
-								lng: longitude
-							})
-						}
-					});
-
-					newLocationLatTemp = latitude
-					newLocationLngTemp = longitude
-				}
-				else {
-							alert('Geocode was not successful for the following reason: ' + status);
-				}
-			});
-		}
 	</script>
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaL3EYJJ4zOg_c8MF5PfQqSRts5gb8wiE&callback=initMap"></script>
