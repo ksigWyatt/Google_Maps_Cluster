@@ -45,6 +45,9 @@
 	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
 
 	<script>
+		// Made by Wyatt Baggett
+		// FGCU Software Engineering '18
+		
 		// Firebase init
 		var config = {
 			apiKey: "AIzaSyCX1G5olE2m4PeaDtEf30bFALYOjIig4uo",
@@ -62,9 +65,7 @@
 		var newLocationLngTemp = 0
 		var contentString = ""
 
-		// neccessary because there's going to be many hundereds of locations
-		// unfortunately accessing them individually in forEach() it won't work unless we render
-		// the map several times - much older machines might not be able to handle this much ram allocation
+		// unfortunately much older machines might not be able to handle this much ram allocation
 		// it's 6 * potentially 25000 items. Then again Firebase limits to 1GB of data.
 		var located = []
 		var locationKey = []
@@ -109,7 +110,6 @@
 			// Add some markers to the map
 			var markers = locations.map(function (location, i) {
 
-				// Somewhat async call to create the labels as they are updated in the system
 				// if the job is other - let's not display that
 				if (job[i] == "Other") {
 					job[i] = ""
@@ -197,9 +197,8 @@
 
 			// Add a marker clusterer to manage the markers.
 			var markerCluster = new MarkerClusterer(map, markers, {
-							imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+				imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
 			});
-			
 		}
 
 		// restore the arrays to empty once the page has loaded
