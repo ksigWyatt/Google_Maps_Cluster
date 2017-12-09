@@ -92,10 +92,18 @@
                 
                 // if the locations in the array match the criteria
                 if (material == materials[i] && color == colors[i]) {
-                    number++;
+                    
+					// only display the first 5 loations in the list
+					if (number >= 5) {
+						return;
+					}
+
+					number++;
                     
                     data += '<br><br>' + number + '. ' + '<a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">'
                          + located[i] + '</a>'
+
+						 
                 }
                 document.getElementById("results-panel").innerHTML =  header + data
             }
