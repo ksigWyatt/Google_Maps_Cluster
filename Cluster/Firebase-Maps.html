@@ -199,17 +199,6 @@
 			var markerCluster = new MarkerClusterer(map, markers, {
 							imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
 			});
-
-			// For adding new addresses
-			var geocoder = new google.maps.Geocoder();
-
-			// Uncaught TypeError: Cannot read property 'addEventListener' of null
-			var submitButton = document.getElementById('submit')
-			if (submitButton) {
-				submitButton.addEventListener('click', function () {
-							geocodeAddress(geocoder, map);
-				});
-			}
 			
 		}
 
@@ -222,44 +211,6 @@
 		reasonForOther = []
 		locationImage = []
 
-
-		function geocodeAddress(geocoder, resultsMap) {
-			var address = document.getElementById('address').value;
-			geocoder.geocode({'address': address }, function (results, status) {
-
-				if (status === 'OK') {
-					var latitude = results[0].geometry.location.lat()
-					var longitude = results[0].geometry.location.lng()
-
-					// This function runs twice for some reason
-					if (latitude === newLocationLatTemp && longitude === newLocationLngTemp) {
-						return ;
-					}
-
-					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
-						const userData = snapshot.val();
-						// Dont duplicate places that exist - that's just wasteful
-						if (userData) {
-							alert("Oops! This location is already in the database. Please try another location.");
-						return;
-						}
-						else {
-							var newDBRefObject = dbRefObject.push();
-							newDBRefObject.set({
-							lat: latitude,
-								lng: longitude
-							})
-						}
-					});
-
-					newLocationLatTemp = latitude
-					newLocationLngTemp = longitude
-				}
-				else {
-							alert('Geocode was not successful for the following reason: ' + status);
-				}
-			});
-		}
 	</script>
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaL3EYJJ4zOg_c8MF5PfQqSRts5gb8wiE&callback=initMap"></script>
