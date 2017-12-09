@@ -85,7 +85,7 @@
             var zip = document.getElementById('zipCode').value;
             var header = '<h2>' + color + ' ' + material + '</h2>';
             var data = ""
-            var number = 0
+            var number = 1
 
             // Find matches
             for (var i = 0; i < locationKey.length; i++) {
@@ -94,16 +94,16 @@
                 if (material == materials[i] && color == colors[i]) {
                     
 					// only display the first 5 loations in the list
-					if (number >= 5) {
+					// 6 since we start at 1
+					if (number >= 6) {
 						return;
 					}
-
-					number++;
-                    
-                    data += '<br><br>' + number + '. ' + '<a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">'
-                         + located[i] + '</a>'
-
-						 
+					else {
+						// ordered list looking return
+						data += '<br><br>' + number + '. ' + '<a href="https://www.google.com/maps/dir//' + located[i] + 
+							'/" target="_blank">' + located[i] + '</a>'
+					}
+					number++;		 
                 }
                 document.getElementById("results-panel").innerHTML =  header + data
             }
