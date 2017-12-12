@@ -2,9 +2,24 @@
 <html>
 <head>
 	<meta charset="utf-8">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
 	<style>
 
 		/* Optional: Makes the sample page fill the window. */
+
+		body, input {
+			font-family: 'Roboto', sans-serif;			
+      	}
+
+		p {
+			color: #605E5E;
+		}
+
+		#submitSearch {
+			font-family: 'Roboto', sans-serif;	
+			font-weight: 500;
+		}
+
 
 		.column {
 			float: left;
@@ -83,12 +98,13 @@
 			var material = document.getElementById('materials').value;
 			var color = document.getElementById('color').value;
             var zip = document.getElementById('zipCode').value;
+            //var zip = document.getElementById('zipCode').value;
             var header = '<h2>' + color + ' ' + material + '</h2>';
             var data = ""
             var number = 1
 
-            // Find matches
-            for (var i = 0; i < locationKey.length; i++) {
+				// Find matches
+				for (var i = 0; i < locationKey.length; i++) {
                 
                 // if the locations in the array match the criteria
                 if (material == materials[i] && color == colors[i]) {
@@ -141,12 +157,12 @@
             </select>
             <br>
 			<br>
-            <p>Enter your Zip Code</p>
+            <!-- <p>Enter your Zip Code</p>
 			<input id="zipCode" type="textbox" placeholder="33912">
 			<br>
             <br>
             <br>
-			<br>
+			<br> -->
 			<input id="submitSearch" type="button" value="Search">
         </div>
         <div class="column" id="results-panel">
