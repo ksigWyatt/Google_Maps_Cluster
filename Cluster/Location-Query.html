@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
+	<style>
+
+		/* Optional: Makes the sample page fill the window. */
+
+		body, input {
+			font-family: 'Roboto', sans-serif;			
+      	}
+
+		p {
+			color: #605E5E;
+		}
+
+		#submitSearch {
+			font-family: 'Roboto', sans-serif;	
+			font-weight: 500;
+		}
+
+
+		.column {
+			float: left;
+			width: 50%;
+		}
+
+		/* Clear floats after the columns */
+
+		.row:after {
+			content: "";
+			display: table;
+			clear: both;
+		}
+
+		.row {
+			margin: 20px;
+		}
+
+		.row select,
+		#address,
+		#other-reason,
+		#imagePath {
+			width: 60%;
+		}
+	</style>
+</head>
+
+<body>
+	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
+
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyCX1G5olE2m4PeaDtEf30bFALYOjIig4uo",
+			authDomain: "roofing-site-1504805766638.firebaseapp.com",
+			databaseURL: "https://roofing-site-1504805766638.firebaseio.com",
+			projectId: "roofing-site-1504805766638",
+			storageBucket: "roofing-site-1504805766638.appspot.com",
+			messagingSenderId: "907972576340"
+		};
+		firebase.initializeApp(config);
+
+		const dbRefObject = firebase.database().ref().child('location');
+		var contentString = ""
+        var located = []
+		var locationKey = []
+		var colors = []
+		var job = []
+		var materials = []
+		var reasonForOther = []
+		var locationImage = []
+
+        window.onload=function() {
+            var searchButton = document.getElementById("submitSearch");
+            searchButton.addEventListener("click", findAddressNearby);
+        }
+
+		dbRefObject.on('value', function (snapshot) {
+            
+            snapshot.forEach(childSnapshot => {
+                let item = childSnapshot.val();
+                item.key = childSnapshot.key; // UID for each item in DB
+                locationKey.push(childSnapshot.key);
+                located.push(childSnapshot.val().address);
+                colors.push(childSnapshot.val().color);
+                materials.push(childSnapshot.val().materials);
+                reasonForOther.push(childSnapshot.val().other);
+                locationImage.push(childSnapshot.val().image);
+            });
+        });
+
+		// Add Address & convert to lat / long
+		function findAddressNearby() {
+
+			var material = document.getElementById('materials').value;
+			var color = document.getElementById('color').value;
+            var zip = document.getElementById('zipCode').value;
+            //var zip = document.getElementById('zipCode').value;
+            var header = '<h2>' + color + ' ' + material + '</h2>';
+            var data = ""
+            var number = 1
+
+				// Find matches
+				for (var i = 0; i < locationKey.length; i++) {
+                
+                // if the locations in the array match the criteria
+                if (material == materials[i] && color == colors[i]) {
+                    
+					// only display the first 5 loations in the list
+					// 6 since we start at 1
+					if (number >= 6) {
+						return;
+					}
+					else {
+						// ordered list looking return
+						data += '<br><br>' + number + '. ' + '<a href="https://www.google.com/maps/dir//' + located[i] + 
+							'/" target="_blank">' + located[i] + '</a>'
+					}
+					number++;		 
+                }
+                document.getElementById("results-panel").innerHTML =  header + data
+            }
+            // remove desc text after a few seconds
+            if (data == "") {
+                document.getElementById("results-panel").innerHTML =  header + '<p>No Results Found</p>'
+                setTimeout(function(){ document.getElementById("results-panel").innerHTML = "" }, 4000);
+            }
+            
+		}
+	</script>
+
+	<div class="row">
+		<div class="column" id="search-panel">
+			<p>Which material are you looking for?</p>
+			<select id="materials" required>
+				<option value="Asphalt">Asphalt</option>
+				<option value="Clay">Clay</option>
+				<option value="Concrete">Concrete</option>
+				<option value="Flat Deck">Flat Deck</option>
+				<option value="Metal">Metal</option>
+				<option value="Shingle">Shingle</option>
+				<option value="Tile">Tile</option>
+			</select>
+			<br>
+            <br>
+            <p>What color do you like?</p>
+			<select id="color">
+				<option value="Buckskin">Buckskin</option>
+				<option value="Caramel">Caramel</option>
+				<option value="Desert Spice">Desert Spice</option>
+				<option value="Gray">Gray</option>
+				<option value="Mill">Mill</option>
+				<option value="Sahara Tan">Sahara Tan</option>
+            </select>
+            <br>
+			<br>
+            <!-- <p>Enter your Zip Code</p>
+			<input id="zipCode" type="textbox" placeholder="33912">
+			<br>
+            <br>
+            <br>
+			<br> -->
+			<input id="submitSearch" type="button" value="Search">
+        </div>
+        <div class="column" id="results-panel">
+
+        </div>
+	</div>
+</body>
+</html>

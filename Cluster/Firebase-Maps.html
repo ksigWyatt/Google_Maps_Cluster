@@ -1,23 +1,39 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 	<meta charset="utf-8">
-	<title>Maps Clustering</title>
 	<style>
-		/* Always set the map height explicitly to define the size of the div
-		   element that contains the map. 
-		*/
+		/* Always set the map height explicitly to define the size of the div. */
 
 		#map {
 			height: 100%;
 		}
 
 		/* Optional: Makes the sample page fill the window. */
-		html, body {
+
+		html,
+		body {
 			height: 100%;
 			margin: 0px;
 			padding: 0px;
+		}
+
+		.column {
+			float: left;
+			width: 50%;
+			padding: 10px;
+		}
+
+		/* Clear floats after the columns */
+
+		.row:after {
+			content: "";
+			display: table;
+			clear: both;
+		}
+
+		* {
+			box-sizing: border-box;
 		}
 	</style>
 </head>
@@ -29,6 +45,10 @@
 	<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
 
 	<script>
+		// PARA 
+		// Made by Wyatt Baggett
+		// FGCU Software Engineering '18
+		
 		// Firebase init
 		var config = {
 			apiKey: "AIzaSyCX1G5olE2m4PeaDtEf30bFALYOjIig4uo",
@@ -46,17 +66,15 @@
 		var newLocationLngTemp = 0
 		var contentString = ""
 
-		// neccessary because there's going to be many hundereds of locations
-		// unfortunately accessing them individually in forEach() it won't work unless we render
-		// the map several times - much older machines might not be able to handle this much ram allocation
+		// unfortunately much older machines might not be able to handle this much ram allocation
 		// it's 6 * potentially 25000 items. Then again Firebase limits to 1GB of data.
 		var located = []
 		var locationKey = []
 		var color = []
-		var job =  []
-		var materials = [] 
+		var job = []
+		var materials = []
 		var reasonForOther = []
-
+		var locationImage = []
 
 		// capture all locations in the DB
 		dbRefObject.on('value', function (snapshot) {
@@ -71,7 +89,8 @@
 				color.push(childSnapshot.val().color);
 				job.push(childSnapshot.val().job);
 				materials.push(childSnapshot.val().materials);
-				reasonForOther.push(childSnapshot.val().reasonForOther);
+				reasonForOther.push(childSnapshot.val().other);
+				locationImage.push(childSnapshot.val().image);
 				returnArr.push(item);
 			});
 			locations = returnArr
@@ -90,35 +109,85 @@
 
 			// Add some markers to the map
 			var markers = locations.map(function (location, i) {
-				
-				// Somewhat async call to create the labels as they are updated in the system
-				// Desc label fort each marker
-				contentString = '<div id="content">'+
-					'<div id="siteNotice">'+
-					'</div>'+
-					'<h2 id="firstHeading" class="firstHeading">' + color[i] + ' ' +
-					materials[i] + ' ' + job[i] + '</h2>'+
-					'<div id="bodyContent">'+
-					'<b>Location ID:   </b>' + locationKey[i] + 
-					'<p>' +
+
+				// if the job is other - let's not display that
+				if (job[i] == "Other") {
+					job[i] = ""
+				}
+
+				// if the job isn't Other and the client entered something in the other type of job box
+				else if (reasonForOther[i]) {
+
+					// if the other reason was something like Gutter Install and they Chose Install as the job
+					if (reasonForOther[i].includes(job[i])) {
+						job[i] = ""
+					}
+					else if (reasonForOther[i].includes(job[i].toLowerCase())) {
+						job[i] = ""
+
+					}
+					
+					contentString = '<div id="content">' +
+
+					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
+					materials[i] + ' ' + reasonForOther[i] + ' ' + job[i] +  '</h2>' +
+
+					'<div class="row">' +
+
+					'<div class="column">' +
+					'<img id="image" style="float:left;width:200px;height:200px;" ' +
+					'src="' + locationImage[i] + '">' +
+					'</div>' +
+
+					'<div class="column">' +
 					located[i] +
-					'</p>'+
-					'<br><a href="https://www.google.com/maps/dir//' + located[i] +  '/" target="_blank">' +
-					'Get Directions to here</a> '+
-					'</div>'+
+					'</p> ' +
+					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
+					'Get Directions to here</a> ' +
+					'<br><br><br><br>' +
+					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
+
+					'</div>' +
+					'</div>' +
 					'</div>';
+				}
+				else {
+					contentString = '<div id="content">' +
+
+					'<h2 id="heading" class="firstHeading">' + color[i] + ' ' +
+					materials[i] + ' ' + job[i] + reasonForOther[i] +  '</h2>' +
+
+					'<div class="row">' +
+
+					'<div class="column">' +
+					'<img id="image" style="float:left;width:200px;height:200px;" ' +
+					'src="' + locationImage[i] + '">' +
+					'</div>' +
+
+					'<div class="column">' +
+					located[i] +
+					'</p> ' +
+					'<br><a href="https://www.google.com/maps/dir//' + located[i] + '/" target="_blank">' +
+					'Get Directions to here</a> ' +
+					'<br><br><br><br>' +
+					'<p><strong>Location ID: \t</strong>' + locationKey[i] + '</p>' +
+
+					'</div>' +
+					'</div>' +
+					'</div>';
+				}
 
 				// info window pops when the marker is clicked
 				var infowindow = new google.maps.InfoWindow({
-					content: contentString
+							content: contentString
 				});
 				// create a custom marker at location, location
-				var marker =  new google.maps.Marker({
-					position: location
+				var marker = new google.maps.Marker({
+							position: location
 				});
 
-				marker.addListener('click', function() {
-					infowindow.open(map, marker);
+				marker.addListener('click', function () {
+							infowindow.open(map, marker);
 				});
 				i++;
 
@@ -127,58 +196,20 @@
 			});
 
 			// Add a marker clusterer to manage the markers.
-			var markerCluster = new MarkerClusterer(map, markers, { 
-					imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' 
-			});
-
-
-			// For adding new addresses
-			var geocoder = new google.maps.Geocoder();
-
-			// Uncaught TypeError: Cannot read property 'addEventListener' of null
-			document.getElementById('submit').addEventListener('click', function () {
-				geocodeAddress(geocoder, map);
+			var markerCluster = new MarkerClusterer(map, markers, {
+				imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
 			});
 		}
 
+		// restore the arrays to empty once the page has loaded
+		located = []
+		locationKey = []
+		color = []
+		job = []
+		materials = []
+		reasonForOther = []
+		locationImage = []
 
-		function geocodeAddress(geocoder, resultsMap) {
-			var address = document.getElementById('address').value;
-			geocoder.geocode({ 'address': address }, function (results, status) {
-
-				if (status === 'OK') {
-					var latitude = results[0].geometry.location.lat()
-					var longitude = results[0].geometry.location.lng()
-
-					// This function runs twice for some reason
-					if (latitude === newLocationLatTemp && longitude === newLocationLngTemp) {
-						return;
-					}
-
-					dbRefObject.orderByChild("lng").equalTo(longitude).once("value", snapshot => {
-						const userData = snapshot.val();
-						// Dont duplicate places that exist - that's just wasteful 
-						if (userData) {
-							alert("Oops! This location is already in the database. Please try another location.");
-							return;
-						}
-						else {
-							var newDBRefObject = dbRefObject.push();
-							newDBRefObject.set({
-								lat: latitude,
-								lng: longitude
-							})
-						}
-					});
-
-					newLocationLatTemp = latitude
-					newLocationLngTemp = longitude
-				}
-				else {
-					alert('Geocode was not successful for the following reason: ' + status);
-				}
-			});
-		}
 	</script>
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaL3EYJJ4zOg_c8MF5PfQqSRts5gb8wiE&callback=initMap"></script>
